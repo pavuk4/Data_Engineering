@@ -1,0 +1,41 @@
+version: '3.8'
+
+include:
+  - infra.yaml
+services:
+  producer:
+    build:
+      context: ./producer
+    depends_on:
+      - kafka1
+      - kafka2
+    volumes:
+      - ./data:/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - default
+
+  consumer1:
+    build:
+      context: ./consumers
+    command: ["python", "-u", "consumer-1.py"]
+    depends_on:
+      - kafka1
+      - kafka2
+      - minio
+    restart: on-failure
+
+  consumer2:
+    build:
+      context: ./consumers
+    command: ["python", "-u", "consumer-2.py"]
+    depends_on:
+      - kafka1
+      - kafka2
+      - minio
+    restart: on-failure
+
+volumes:
+  data_volume:
+    driver: local
